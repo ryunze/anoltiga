@@ -1,6 +1,5 @@
 <script setup>
 import { RouterLink } from 'vue-router';
-
 </script>
 
 <template>
@@ -29,7 +28,25 @@ import { RouterLink } from 'vue-router';
                         </ul>
                     </li>
                 </ul>
+                <button class="btn btn-outline-dark" @click="checkStatusGateway()">Status: {{ sms.status }}</button>
             </div>
         </div>
     </nav>
 </template>
+
+<script>
+export default {
+    data() {
+        return {
+            sms: {
+                status: 'OFF'
+            }
+        }
+    },
+    methods: {
+        checkStatusGateway() {
+            console.log('Check status gateway..')
+        }
+    }
+}
+</script>
