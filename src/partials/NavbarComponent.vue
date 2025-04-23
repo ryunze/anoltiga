@@ -1,5 +1,7 @@
 <script setup>
+import { ref } from 'vue';
 import { RouterLink } from 'vue-router';
+
 </script>
 
 <template>
@@ -28,7 +30,7 @@ import { RouterLink } from 'vue-router';
                         </ul>
                     </li>
                 </ul>
-                <button class="btn btn-outline-dark" @click="checkStatusGateway()">Status: {{ sms.status }}</button>
+                <button class="btn {{ sms.btnStatus }}" :class="{ 'btn-outline-dark' : sms.btnStatusOff, 'btn-success' : sms.btnStatusOn }" @click="checkStatusGateway">Status: {{ sms.status }}</button>
             </div>
         </div>
     </nav>
@@ -39,13 +41,19 @@ export default {
     data() {
         return {
             sms: {
-                status: 'OFF'
-            }
+                status: 'OFF',
+                btnStatusOff: true,
+                btnStatusOn: false
+            },
         }
     },
     methods: {
         checkStatusGateway() {
-            console.log('Check status gateway..')
+            console.log('Check status gateway..'),
+            this.sms.btnStatusOff = false
+            this.sms.btnStatusOn = true
+            this.sms.status = 'ON'
+
         }
     }
 }
