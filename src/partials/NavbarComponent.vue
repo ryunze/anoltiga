@@ -1,7 +1,8 @@
 <script setup>
 import { ref } from 'vue';
 import { RouterLink } from 'vue-router';
-
+import SpinnerPartial from './SpinnerPartial.vue';
+// const showSpinner = ref(false)
 </script>
 
 <template>
@@ -30,7 +31,12 @@ import { RouterLink } from 'vue-router';
                         </ul>
                     </li>
                 </ul>
-                <button class="btn {{ sms.btnStatus }}" :class="{ 'btn-outline-dark' : sms.btnStatusOff, 'btn-success' : sms.btnStatusOn }" @click="checkStatusGateway">Status: {{ sms.status }}</button>
+                <button class="btn" :class="{ 'btn-outline-dark' : sms.btnStatusOff, 'btn-success' : sms.btnStatusOn }" @click="checkStatusGateway">
+                    <SpinnerPartial v-if="showSpinner"/>
+                    <span>        
+                        Status: {{ sms.status }}
+                    </span>
+                </button>
             </div>
         </div>
     </nav>
@@ -43,16 +49,27 @@ export default {
             sms: {
                 status: 'OFF',
                 btnStatusOff: true,
-                btnStatusOn: false
+                btnStatusOn: false,
+                showSpinner: false,
             },
+            showSpinner: false
         }
     },
     methods: {
-        checkStatusGateway() {
-            console.log('Check status gateway..'),
-            this.sms.btnStatusOff = false
-            this.sms.btnStatusOn = true
-            this.sms.status = 'ON'
+        async checkStatusGateway() {
+            this.showSpinner = true
+            console.log('Check status gateway..')
+            try {
+                const response = await fetch('http://localhost:8000/api/sms.php');
+                const jokes = await response.json();
+                console.log(jokes)
+                this.sms.btnStatusOff = false
+                this.sms.btnStatusOn = true
+                this.sms.status = 'ON'
+                this.showSpinner = false
+            } catch (error) {
+                console.error(error);
+            }
 
         }
     }
