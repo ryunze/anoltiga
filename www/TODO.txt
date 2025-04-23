@@ -1,0 +1,45 @@
+- Catat respon error karna beda error beda arti dari hp
+- Kalo error DEFAULT APP coba cek pengaturan SIM untuk SMS
+
+# Error Message
+
+RESULT_ERROR_GENERIC_FAILURE : Pesan gagal terkirim (abis pulsa/keblok)
+RESULT_NO_DEFAULT_SMS_APP : Pesan gagal terkirim karena tidak setting default SIM untuk SMS
+
+{
+    "id": "1BCdLhAb1a0KfymSYssxY",
+    "isEncrypted": false,
+    "recipients": [
+        {
+            "error": "Send result: RESULT_ERROR_GENERIC_FAILURE",
+            "phoneNumber": "089694050088",
+            "state": "Failed"
+        }
+    ],
+    "state": "Failed",
+    "states": {
+        "Failed": "2024-11-29T00:53:50.196+08:00",
+        "Pending": "2024-11-29T00:53:48.384+08:00",
+        "Processed": "2024-11-29T00:53:48.531+08:00"
+    }
+}
+
+# Delivered
+
+{
+    "id": "8b35sSnnG1G0n7yxjAtn-",
+    "isEncrypted": false,
+    "recipients": [
+        {
+            "phoneNumber": "081240228411",
+            "state": "Delivered"
+        }
+    ],
+    "state": "Delivered",
+    "states": {
+        "Delivered": "2024-11-29T00:51:33.798+08:00",
+        "Pending": "2024-11-29T00:51:32.121+08:00",
+        "Processed": "2024-11-29T00:51:32.255+08:00",
+        "Sent": "2024-11-29T00:51:33.155+08:00"
+    }
+}

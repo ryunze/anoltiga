@@ -1,0 +1,1 @@
+/api.php/sms : Check status gateway
