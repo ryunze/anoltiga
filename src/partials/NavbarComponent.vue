@@ -1,8 +1,6 @@
 <script setup>
-import { ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import SpinnerPartial from './SpinnerPartial.vue';
-// const showSpinner = ref(false)
 </script>
 
 <template>
@@ -29,6 +27,9 @@ import SpinnerPartial from './SpinnerPartial.vue';
                             <li><hr class="dropdown-divider"></li>
                             <li><RouterLink class="dropdown-item" to="/sms/blast">Blast</RouterLink></li>
                         </ul>
+                    </li>
+                    <li class="nav-item">
+                        <RouterLink class="nav-link" aria-current="page" to="/tools/templating">Templating</RouterLink>
                     </li>
                 </ul>
                 <button class="btn" :class="{ 'btn-outline-dark' : sms.btnStatusOff, 'btn-success' : sms.btnStatusOn }" @click="checkStatusGateway">
