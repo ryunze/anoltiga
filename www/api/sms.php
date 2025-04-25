@@ -48,4 +48,11 @@ $api = new SMS_API();
 
 if (!isset($_GET['r'])) {
     $api->getStatusGateway();
+} else {
+    $route = $_GET['r'];
+    switch ($route) {
+        case 'send':
+            echo "Yes";
+        break;
+    }
 }

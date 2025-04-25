@@ -69,6 +69,8 @@ export default {
                 this.sms.status = 'ON'
                 this.showSpinner = false
             } catch (error) {
+                this.sms.status = 'OFF'
+                this.showSpinner = false
                 console.error(error);
             }
 
