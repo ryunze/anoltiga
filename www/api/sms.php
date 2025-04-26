@@ -4,19 +4,13 @@ ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
 
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST');
-header("Access-Control-Allow-Headers: X-Requested-With");
-
-header('Content-Type: application/json');
-
 require_once(__DIR__ . "/../vendor/autoload.php");
 
 use Curl\Curl;
 
 class SMS_API {
 
-    protected $local_address = "192.168.7.39:8080";
+    protected $local_address = "192.168.252.135:8080";
     protected $curl;
     protected $config = [
         'user_name' => 'sms',
@@ -33,7 +27,7 @@ class SMS_API {
 
     public function getStatusGateway()
     {
-        $this->curl->get('192.168.25.169:8080');
+        $this->curl->get($this->local_address);
         if ($this->curl->error) {
             echo 'Error: ' . $this->curl->errorMessage . "\n";
             $this->curl->diagnose();
@@ -42,9 +36,43 @@ class SMS_API {
         }
     }
 
+    public function sendMessage($data)
+    {
+        $this->curl->post($this->local_address . '/message', [
+            'phoneNumbers' => [$data['phoneNumber']],
+            'message' => $data['message']
+        ]);
+
+        if ($this->curl->error) {
+            echo json_encode([
+                "code" => 500,
+                "status" => "error",
+                "message" => "Gagal kirim ke gateway"
+            ]);
+            exit;
+        } else {
+            echo json_encode([
+                "code" => 200,
+                "status" => "success",
+                "message" => "Berhasil kirim ke gateway",
+                "data" => [
+                    "id" => $this->curl->response->id
+                ]
+            ]);
+            exit;
+        }
+
+    }
+
 }
 
 $api = new SMS_API();
+
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST');
+header("Access-Control-Allow-Headers: X-Requested-With");
+
+header('Content-Type: application/json');
 
 if (!isset($_GET['r'])) {
     $api->getStatusGateway();
@@ -52,7 +80,10 @@ if (!isset($_GET['r'])) {
     $route = $_GET['r'];
     switch ($route) {
         case 'send':
-            echo "Yes";
+            // $json = json_decode($raw, true);
+            var_dump($_POST);
+            // var_dump($json);
+            // $api->sendMessage($json);
         break;
     }
 }
