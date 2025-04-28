@@ -30,15 +30,20 @@
         },
         methods: {
             async sendSms() {
+                console.log(JSON.stringify({
+                            phoneNumber: this.phoneNumber,
+                            message: this.message
+                        }))
                 try {
                     const response = await fetch('http://localhost:8000/api/sms.php?r=send', {
                         method: 'post',
-                        body: {
+                        body: JSON.stringify({
                             phoneNumber: this.phoneNumber,
                             message: this.message
-                        }
+                        })
                     });
-                    const result = await response.json();
+                    const result = await response.text();
+                    // const result = await response.json();
                     console.log(result)
                 } catch (error) {
                     console.error(error);

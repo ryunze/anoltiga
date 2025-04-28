@@ -10,7 +10,7 @@ use Curl\Curl;
 
 class SMS_API {
 
-    protected $local_address = "192.168.252.135:8080";
+    protected $local_address = "192.168.85.37:8080";
     protected $curl;
     protected $config = [
         'user_name' => 'sms',
@@ -38,17 +38,21 @@ class SMS_API {
 
     public function sendMessage($data)
     {
+        $this->curl->setHeader('Content-Type', 'application/json');
+        
         $this->curl->post($this->local_address . '/message', [
             'phoneNumbers' => [$data['phoneNumber']],
             'message' => $data['message']
         ]);
 
         if ($this->curl->error) {
-            echo json_encode([
-                "code" => 500,
-                "status" => "error",
-                "message" => "Gagal kirim ke gateway"
-            ]);
+
+            var_dump($this->curl->errorMessage);
+            // echo json_encode([
+            //     "code" => 500,
+            //     "status" => "error",
+            //     "message" => "Gagal kirim ke gateway"
+            // ]);
             exit;
         } else {
             echo json_encode([
@@ -72,7 +76,7 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST');
 header("Access-Control-Allow-Headers: X-Requested-With");
 
-header('Content-Type: application/json');
+// header('Content-Type: application/json');
 
 if (!isset($_GET['r'])) {
     $api->getStatusGateway();
@@ -80,10 +84,9 @@ if (!isset($_GET['r'])) {
     $route = $_GET['r'];
     switch ($route) {
         case 'send':
-            // $json = json_decode($raw, true);
-            var_dump($_POST);
-            // var_dump($json);
-            // $api->sendMessage($json);
+            $data = file_get_contents('php://input');
+            $data = json_decode($data, true);
+            $api->sendMessage($data);
         break;
     }
 }
