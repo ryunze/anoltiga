@@ -58,6 +58,13 @@ export default {
     },
     methods: {
         async checkStatusGateway() {
+
+            Toastify({
+                text: 'Cek Status Gateway SMS..',
+                position: 'right',
+                gravity: 'bottom'
+            }).showToast()
+
             this.showSpinner = true
             console.log('Check status gateway..')
             try {

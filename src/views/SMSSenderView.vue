@@ -42,9 +42,25 @@
                             message: this.message
                         })
                     });
-                    const result = await response.text();
-                    // const result = await response.json();
+                    // const result = await response.text();
+                    const result = await response.json();
                     console.log(result)
+                    switch (result.code) {
+                        case 200:
+                            Toastify({
+                                text: 'Berhasil kirim sms.',
+                                position: 'right',
+                                gravity: 'bottom'
+                            }).showToast();
+                        break;
+                        default:
+                            Toastify({
+                                text: 'Ada kesalahan. Periksa gateway..',
+                                position: 'right',
+                                gravity: 'bottom'
+                            }).showToast();
+                        break;
+                    }
                 } catch (error) {
                     console.error(error);
                 }

@@ -4,7 +4,7 @@ import SMSBlastView from './views/SMSBlastView.vue'
 import TemplatingView from './views/Tools/TemplatingView.vue'
 
 const routes = [
-  { path: '/', component: SMSSenderView },
+  { path: '/', component: SMSBlastView },
   { path: '/sms/sender', component: SMSSenderView },
   { path: '/sms/blast', component: SMSBlastView },
   { path: '/tools/templating', component: TemplatingView }
