@@ -19,7 +19,7 @@
                 </div>
                 <div class="modal-footer">
                     <p class="me-auto">Data {{ counterSms.current }} / {{ counterSms.total }} </p>
-                    <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button> -->
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="stopLoopSender">Batal</button>
                 </div>
             </div>
         </div>
@@ -28,13 +28,13 @@
     <!-- Main Container -->
     <div class="container">
         <div class="col-md-6 m-auto my-4">
-            <h2 class="mb-4 fw-bold ">SMS Blast</h2>
+            <h2 class="mb-4 fw-bold section-title">SMS Blast</h2>
             <div class="card">
                 <div class="card-body">
                     <form class="mb-4">
                         <div class="mb-3">
                             <label class="form-label">File CSV</label>
-                            <input type="file" @change="setFileCsv" name="fileCsv" class="form-control">
+                            <input type="file" @change="setFileCsv" name="fileCsv" class="form-control" accept="text/csv">
                         </div>
                         <textarea name="message" v-model="message" id="" class="form-control"
                             placeholder="Tulis pesan di sini.." rows="12"></textarea>
@@ -72,26 +72,45 @@
                 counterSms: {
                     current: 0,
                     total: 0
-                }
+                },
+                statusBlast: false
             }
         },
         methods: {
             setFileCsv(f) {
                 this.getDataCsv(f.target)
             },
+            stopLoopSender() {
+                console.log('Stop!!!')
+                this.statusBlast = false
+            },
             blastMessages() {
+                
+                // Change status blast
+                this.statusBlast = true
+
                 const progressModal = new bootstrap.Modal(document.getElementById('progressModal'))
                 progressModal.show()
                 const datas = JSON.parse(localStorage.sms)['datacsv'];
                 this.counterSms.total = datas.length
-                const loopSendSms = setInterval(() => {
+
+                var loopSendSms = setInterval(() => {
+
+                    if (this.statusBlast) {
+                        console.log('Send sms!')
+                    } else {
+                        console.log('Stop send sms!')
+                        // clearInterval(loopSendSms)
+                        window.location.reload()
+                    }
+                    
                     this.counterSms.current++
                     this.progressBar.width = (this.counterSms.current / this.counterSms.total) * 100 + '%'
                     this.sms.phoneNumber = datas[0]['NOMOR']
                     this.sms.message = this.modTemplate(this.message, datas[0])
                     
-                    // datas.shift();
                     datas.shift()
+
                     if (datas.length > 0) {
                         this.sms.message = this.modTemplate(this.message, datas[0])
                     } else {
@@ -160,7 +179,6 @@
                             message: data.message
                         })
                     });
-                    // const result = await response.text();
                     const result = await response.json();
                     console.log(result)
                     switch (result.code) {

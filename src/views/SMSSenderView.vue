@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <div class="col-md-6 m-auto my-4">
-            <h2 class="mb-4 fw-bold">SMS Sender</h2>
+            <h2 class="mb-4 fw-bold section-title">SMS Sender</h2>
             <div class="card">
                 <div class="card-body">
                     <form class="mb-4">
