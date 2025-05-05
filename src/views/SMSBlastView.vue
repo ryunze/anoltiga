@@ -3,7 +3,7 @@
     <!-- Modal Progress -->
     <div class="modal fade" id="progressModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
         aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="staticBackdropLabel">Mengirim ke: {{ sms.phoneNumber }}</h1>
@@ -36,6 +36,9 @@
                             <label class="form-label">File CSV</label>
                             <input type="file" @change="setFileCsv" name="fileCsv" class="form-control" accept="text/csv">
                         </div>
+                        <div class="mb-3">
+                            <input type="text" class="form-control" v-model="blast.timeout">
+                        </div>
                         <textarea name="message" v-model="message" id="" class="form-control"
                             placeholder="Tulis pesan di sini.." rows="12"></textarea>
                     </form>
@@ -50,7 +53,8 @@
 
 <script>
     import {
-        reactive
+        reactive,
+        toRaw
     } from 'vue'
 
     export default {
@@ -73,34 +77,43 @@
                     current: 0,
                     total: 0
                 },
-                statusBlast: false
+                blast: {
+                    timeout: 1,
+                    status: false
+                },
+                datacsv: {}
             }
         },
         methods: {
+            
             setFileCsv(f) {
-                this.getDataCsv(f.target)
+                this.getDataCsv(f.target, (data) => {
+                    this.datacsv = data
+                })
             },
             stopLoopSender() {
                 console.log('Stop!!!')
-                this.statusBlast = false
+                this.blast.status = false
             },
             blastMessages() {
                 
+                console.log(this.datacsv)
+                
                 // Change status blast
-                this.statusBlast = true
+                this.blast.status = true
 
                 const progressModal = new bootstrap.Modal(document.getElementById('progressModal'))
                 progressModal.show()
-                const datas = JSON.parse(localStorage.sms)['datacsv'];
+
+                // const datas = JSON.parse(localStorage.sms)['datacsv'];
+                const datas = toRaw(this.datacsv)
+
                 this.counterSms.total = datas.length
 
                 var loopSendSms = setInterval(() => {
 
-                    if (this.statusBlast) {
-                        console.log('Send sms!')
-                    } else {
-                        console.log('Stop send sms!')
-                        // clearInterval(loopSendSms)
+                    if (!this.blast.status) {
+                        console.log('Stop!')
                         window.location.reload()
                     }
                     
@@ -109,19 +122,24 @@
                     this.sms.phoneNumber = datas[0]['NOMOR']
                     this.sms.message = this.modTemplate(this.message, datas[0])
                     
-                    datas.shift()
-
+                    
                     if (datas.length > 0) {
-                        this.sms.message = this.modTemplate(this.message, datas[0])
+                        if (this.blast.status == true) {
+                            this.sms.message = this.modTemplate(this.message, datas[0])
+                            // console.log(this.counterSms.current)
+                            datas.shift()
+                        }
+                        console.log(datas.length)
                     } else {
+                        console.log('OK CUKUP')
                         clearInterval(loopSendSms)
                         progressModal.hide()
                         return false
                     }
 
-                }, 1000)
+                }, this.blast.timeout * 1000)
             },
-            getDataCsv(formFile) {
+            getDataCsv(formFile, callback) {
 
                 if (!window.File || !window.FileReader || !window.FileList || !window.Blob) {
                     console.log('The File APIs are not fully supported in this browser.');
@@ -150,6 +168,7 @@
                         headData = headData.split(',');
 
                         hasil.shift();
+
                         hasil.forEach(res => {
                             res = res.replace('\r', '');
                             // console.log(res);
@@ -162,9 +181,12 @@
                         });
 
                         // console.log(datas)
-                        localStorage.sms = JSON.stringify({
-                            datacsv: datas
-                        })
+                        // localStorage.sms = JSON.stringify({
+                        //     datacsv: datas
+                        // })
+
+                        // this.datacsv = datas
+                        callback(datas)
 
                     }
 
@@ -174,10 +196,11 @@
                 try {
                     const response = await fetch('http://localhost:8000/api/sms.php?r=send', {
                         method: 'post',
-                        body: JSON.stringify({
-                            phoneNumber: data.phoneNumber,
-                            message: data.message
-                        })
+                        // body: JSON.stringify({
+                        //     phoneNumber: data.phoneNumber,
+                        //     message: data.message
+                        // })
+                        body: JSON.stringify(data)
                     });
                     const result = await response.json();
                     console.log(result)

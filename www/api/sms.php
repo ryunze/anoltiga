@@ -4,6 +4,8 @@ ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
 
+header('Content-Type: application/json');
+
 require_once(__DIR__ . "/../vendor/autoload.php");
 
 use Curl\Curl;
@@ -16,8 +18,6 @@ class SMS_API {
         'user_name' => 'sms',
         'user_password' => '_3PCFY52'
     ];
-
-    protected $configTable = "config_sms";
     
     public function __construct()
     {
@@ -27,6 +27,7 @@ class SMS_API {
 
     public function getStatusGateway()
     {
+        $this->curl->setTimeout(1);
         $this->curl->get($this->local_address);
         if ($this->curl->error) {
             echo 'Error: ' . $this->curl->errorMessage . "\n";
@@ -46,13 +47,11 @@ class SMS_API {
         ]);
 
         if ($this->curl->error) {
-
-            var_dump($this->curl->errorMessage);
-            // echo json_encode([
-            //     "code" => 500,
-            //     "status" => "error",
-            //     "message" => "Gagal kirim ke gateway"
-            // ]);
+            echo json_encode([
+                "code" => 500,
+                "status" => "error",
+                "message" => $this->curl->errorMessage
+            ]);
             exit;
         } else {
             echo json_encode([
@@ -65,6 +64,33 @@ class SMS_API {
             ]);
             exit;
         }
+
+    }
+
+    public function getConfig()
+    {
+        $db = new SQLite3(__DIR__ . '/a03.db');
+
+        if (!$db) {
+            echo json_encode([
+                'status' => 500,
+                'message' => 'Gagal terhubung ke database'
+            ]);
+            exit;
+        }
+
+        $query = "SELECT * FROM config_sms";
+        $result = $db->query($query);
+
+        echo json_encode([
+            'status' => 201,
+            'data' => $result->fetchArray(SQLITE3_ASSOC) 
+        ]);
+
+    }
+
+    public function saveConfig($data)
+    {
 
     }
 
@@ -87,6 +113,14 @@ if (!isset($_GET['r'])) {
             $data = file_get_contents('php://input');
             $data = json_decode($data, true);
             $api->sendMessage($data);
+        break;
+        case 'config':
+            $api->getConfig();
+        break;
+        case 'save-config':
+            $data = file_get_contents('php://input');
+            $data = json_decode($data, true);
+            $api->saveConfig($data);
         break;
     }
 }
