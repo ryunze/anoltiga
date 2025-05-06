@@ -116,12 +116,26 @@
                 console.log('Check status gateway..')
                 try {
                     const response = await fetch('http://localhost:8000/api/sms.php');
-                    const jokes = await response.json();
-                    console.log(jokes)
-                    this.sms.btnStatusOff = false
-                    this.sms.btnStatusOn = true
-                    this.sms.status = 'ON'
+                    const result = await response.json();
+                    console.log(result)
+                    if (result.status == 200) {
+                        this.sms.btnStatusOff = false
+                        this.sms.btnStatusOn = true
+                        this.sms.status = 'ON'
+                    } else {
+                        this.sms.status = 'OFF'
+                        this.sms.btnStatusOff = true
+                        this.sms.btnStatusOn = false
+                    }
+                    
                     this.showSpinner = false
+
+                    Toastify({
+                        text: result.message,
+                        position: 'right',
+                        gravity: 'bottom'
+                    }).showToast()
+
                 } catch (error) {
                     this.sms.status = 'OFF'
                     this.showSpinner = false
@@ -130,6 +144,8 @@
 
             },
             async getSmsConfig() {
+                const modalConfigSms = new bootstrap.Modal(document.getElementById('modalConfigSms'))
+                modalConfigSms.show()
                 try {
                     const response = await fetch('http://localhost:8000/api/sms.php?r=config');
                     const result = await response.json();
@@ -141,16 +157,29 @@
                             this.smsConfig.username = result.data['user_name']
                             this.smsConfig.password = result.data['user_password']
                             console.log(this.smsConfig)
-                        break;
+                            break;
                     }
                 } catch (error) {
                     console.error(error);
                 }
-                const modalConfigSms = new bootstrap.Modal(document.getElementById('modalConfigSms'))
-                modalConfigSms.show()
             },
             async saveConfig() {
+                try {
+                    const response = await fetch('http://localhost:8000/api/sms.php?r=save-config', {
+                        method: 'post',
+                        body: JSON.stringify(this.smsConfig)
+                    });
+                    const result = await response.json();
+                    console.log(result)
+                    Toastify({
+                        text: result.message,
+                        gravity: 'bottom',
+                        position: 'right'
+                    }).showToast()
 
+                } catch (error) {
+                    console.error(error);
+                }
             }
         }
     }

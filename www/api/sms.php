@@ -27,21 +27,69 @@ class SMS_API {
 
     public function getStatusGateway()
     {
+
         $this->curl->setTimeout(1);
-        $this->curl->get($this->local_address);
+
+        $db = new SQLite3(__DIR__ . '/a03.db');
+
+        if (!$db) {
+            echo json_encode([
+                'status' => 500,
+                'message' => 'Gagal terhubung ke database'
+            ]);
+            exit;
+        }
+
+        $query = "SELECT * FROM config_sms";
+        $result = $db->query($query);
+        $result = $result->fetchArray(SQLITE3_ASSOC);
+
+        
+        $ip = 'http://' . $result['local_address'];
+
+        $this->curl->get($ip);
+
         if ($this->curl->error) {
-            echo 'Error: ' . $this->curl->errorMessage . "\n";
-            $this->curl->diagnose();
+            // echo 'Error: ' . $this->curl->errorMessage . "\n";
+            // $this->curl->diagnose();
+            echo json_encode([
+                'status' => 500,
+                'message' => 'Gagal terhubung ke ponsel'
+            ]);
+            exit;
         } else {
-            echo json_encode($this->curl->response);
+            // echo json_encode($this->curl->response);
+            echo json_encode([
+                'status' => 200,
+                'message' => 'Berhasil terhubung ke ponsel'
+            ]);
+            exit;
         }
     }
 
     public function sendMessage($data)
     {
+        $db = new SQLite3(__DIR__ . '/a03.db');
+
+        if (!$db) {
+            echo json_encode([
+                'status' => 500,
+                'message' => 'Gagal terhubung ke database'
+            ]);
+            exit;
+        }
+
+        $query = "SELECT * FROM config_sms";
+        $result = $db->query($query);
+        $result = $result->fetchArray(SQLITE3_ASSOC);
+
+        
+        $ip = 'http://' . $result['local_address'];
+
+        $this->curl->setTimeout(1);
         $this->curl->setHeader('Content-Type', 'application/json');
         
-        $this->curl->post($this->local_address . '/message', [
+        $this->curl->post($ip . '/message', [
             'phoneNumbers' => [$data['phoneNumber']],
             'message' => $data['message']
         ]);
@@ -91,7 +139,33 @@ class SMS_API {
 
     public function saveConfig($data)
     {
+        // var_dump($data);
 
+        $db = new SQLite3(__DIR__ . '/a03.db');
+
+        if (!$db) {
+            echo json_encode([
+                'status' => 500,
+                'message' => 'Gagal terhubung ke database'
+            ]);
+            exit;
+        }
+
+        $query = "UPDATE config_sms SET local_address = '" . $data['localAddress'] . "', user_name = '" . $data['username'] . "', user_password = '" . $data['password'] . "'";
+
+        if (!$db->exec($query)) {
+            echo json_encode([
+                'status' => 500,
+                'message' => 'Gagal update config'
+            ]);
+            exit;
+        }
+
+        echo json_encode([
+            'status' => 200,
+            'message' => 'Berhasil update config'
+        ]);
+        exit;
     }
 
 }

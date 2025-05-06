@@ -97,7 +97,20 @@
             },
             blastMessages() {
                 
-                console.log(this.datacsv)
+                // console.log(this.datacsv)
+
+                if (this.datacsv.length === undefined) {
+                    console.log('Data CSV kosong.')
+                    Toastify({
+                        text: 'File CSV tidak boleh kosong',
+                        gravity: 'bottom',
+                        position: 'right'
+                    }).showToast()
+                    return false;
+                }
+
+                // const datas = JSON.parse(localStorage.sms)['datacsv'];
+                const datas = toRaw(this.datacsv)
                 
                 // Change status blast
                 this.blast.status = true
@@ -105,15 +118,24 @@
                 const progressModal = new bootstrap.Modal(document.getElementById('progressModal'))
                 progressModal.show()
 
-                // const datas = JSON.parse(localStorage.sms)['datacsv'];
-                const datas = toRaw(this.datacsv)
-
                 this.counterSms.total = datas.length
 
                 var loopSendSms = setInterval(() => {
 
+                    if (datas.length < 1) {
+                        this.blast.status = false
+                        this.counterSms.current = 0
+                        this.counterSms.total = 0
+                        // console.log('OK CUKUP')
+                        clearInterval(loopSendSms)
+                        progressModal.hide()
+                        return false
+                    }
+
+                    // console.log(this.blast.status)
+
                     if (!this.blast.status) {
-                        console.log('Stop!')
+                        // console.log('Stop!')
                         window.location.reload()
                     }
                     
@@ -122,16 +144,21 @@
                     this.sms.phoneNumber = datas[0]['NOMOR']
                     this.sms.message = this.modTemplate(this.message, datas[0])
                     
-                    
                     if (datas.length > 0) {
-                        if (this.blast.status == true) {
+                        if (this.blast.status) {
                             this.sms.message = this.modTemplate(this.message, datas[0])
-                            // console.log(this.counterSms.current)
+                            this.sendSms(this.sms)
                             datas.shift()
+                            // console.log(datas.length)
+                        } else {
+                            // console.log('OK CUKUP')
+                            clearInterval(loopSendSms)
+                            progressModal.hide()
+                            return false
                         }
-                        console.log(datas.length)
                     } else {
-                        console.log('OK CUKUP')
+                        this.blast.status = false
+                        // console.log('OK CUKUP')
                         clearInterval(loopSendSms)
                         progressModal.hide()
                         return false
@@ -193,6 +220,7 @@
                 }
             },
             async sendSms(data) {
+                console.log(data)
                 try {
                     const response = await fetch('http://localhost:8000/api/sms.php?r=send', {
                         method: 'post',
