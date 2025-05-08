@@ -21,6 +21,13 @@
                 <div class="modal-body">
                     <form>
                         <div class="mb-3">
+                            <label for="localAddress" class="form-label" >Kartu SIM</label>
+                            <select class="form-control" v-model="smsConfig.simNumber">
+                                <option value="1">SIM 1</option>
+                                <option value="2">SIM 2</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
                             <label for="localAddress" class="form-label">Local Adress:</label>
                             <input type="text" class="form-control" v-model="smsConfig.localAddress">
                         </div>
@@ -35,7 +42,6 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="button" class="btn btn-primary" @click="saveConfig">Simpan</button>
                 </div>
             </div>
@@ -92,7 +98,8 @@
                 smsConfig: {
                     localAddress: '',
                     username: '',
-                    password: ''
+                    password: '',
+                    simNumber: '1'
                 },
                 sms: {
                     status: 'OFF',
@@ -156,6 +163,7 @@
                             this.smsConfig.localAddress = result.data['local_address']
                             this.smsConfig.username = result.data['user_name']
                             this.smsConfig.password = result.data['user_password']
+                            this.smsConfig.simNumber = result.data['sim_number']
                             console.log(this.smsConfig)
                             break;
                     }

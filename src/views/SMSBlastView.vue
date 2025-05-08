@@ -37,8 +37,10 @@
                             <input type="file" @change="setFileCsv" name="fileCsv" class="form-control" accept="text/csv">
                         </div>
                         <div class="mb-3">
+                            <label class="form-label">Timeout (Detik)</label>
                             <input type="text" class="form-control" v-model="blast.timeout">
                         </div>
+                        <label class="form-label">Pesan (Template)</label>
                         <textarea name="message" v-model="message" id="" class="form-control"
                             placeholder="Tulis pesan di sini.." rows="12"></textarea>
                     </form>

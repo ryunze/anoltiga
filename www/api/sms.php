@@ -12,24 +12,12 @@ use Curl\Curl;
 
 class SMS_API {
 
-    protected $local_address = "192.168.219.211:8080";
     protected $curl;
-    protected $config = [
-        'user_name' => 'sms',
-        'user_password' => '_3PCFY52'
-    ];
+    protected $configs = [];
+    protected $db;
     
     public function __construct()
     {
-        $this->curl = new Curl();
-        $this->curl->setBasicAuthentication($this->config['user_name'], $this->config['user_password']);
-    }
-
-    public function getStatusGateway()
-    {
-
-        $this->curl->setTimeout(1);
-
         $db = new SQLite3(__DIR__ . '/a03.db');
 
         if (!$db) {
@@ -40,12 +28,23 @@ class SMS_API {
             exit;
         }
 
+        $this->db = $db;
+
         $query = "SELECT * FROM config_sms";
         $result = $db->query($query);
-        $result = $result->fetchArray(SQLITE3_ASSOC);
 
+        $this->configs = $result->fetchArray(SQLITE3_ASSOC);
+
+        // var_dump($this->configs);
+
+        $this->curl = new Curl();
+        $this->curl->setBasicAuthentication($this->configs['user_name'], $this->configs['user_password']);
+    }
+
+    public function getStatusGateway()
+    {
         
-        $ip = 'http://' . $result['local_address'];
+        $ip = 'http://' . $this->configs['local_address'];
 
         $this->curl->get($ip);
 
@@ -69,29 +68,16 @@ class SMS_API {
 
     public function sendMessage($data)
     {
-        $db = new SQLite3(__DIR__ . '/a03.db');
-
-        if (!$db) {
-            echo json_encode([
-                'status' => 500,
-                'message' => 'Gagal terhubung ke database'
-            ]);
-            exit;
-        }
-
-        $query = "SELECT * FROM config_sms";
-        $result = $db->query($query);
-        $result = $result->fetchArray(SQLITE3_ASSOC);
-
-        
-        $ip = 'http://' . $result['local_address'];
+  
+        $ip = 'http://' . $this->configs['local_address'];
 
         $this->curl->setTimeout(1);
         $this->curl->setHeader('Content-Type', 'application/json');
         
         $this->curl->post($ip . '/message', [
             'phoneNumbers' => [$data['phoneNumber']],
-            'message' => $data['message']
+            'message' => $data['message'],
+            'simNumber' => $this->configs['sim_number']
         ]);
 
         if ($this->curl->error) {
@@ -117,43 +103,20 @@ class SMS_API {
 
     public function getConfig()
     {
-        $db = new SQLite3(__DIR__ . '/a03.db');
-
-        if (!$db) {
-            echo json_encode([
-                'status' => 500,
-                'message' => 'Gagal terhubung ke database'
-            ]);
-            exit;
-        }
-
-        $query = "SELECT * FROM config_sms";
-        $result = $db->query($query);
-
         echo json_encode([
             'status' => 201,
-            'data' => $result->fetchArray(SQLITE3_ASSOC) 
+            'data' => $this->configs
         ]);
 
+        exit;
     }
 
     public function saveConfig($data)
     {
-        // var_dump($data);
 
-        $db = new SQLite3(__DIR__ . '/a03.db');
+        $query = "UPDATE config_sms SET local_address = '" . $data['localAddress'] . "', user_name = '" . $data['username'] . "', user_password = '" . $data['password'] . "', sim_number = '" . $data['simNumber'] . "'";
 
-        if (!$db) {
-            echo json_encode([
-                'status' => 500,
-                'message' => 'Gagal terhubung ke database'
-            ]);
-            exit;
-        }
-
-        $query = "UPDATE config_sms SET local_address = '" . $data['localAddress'] . "', user_name = '" . $data['username'] . "', user_password = '" . $data['password'] . "'";
-
-        if (!$db->exec($query)) {
+        if (!$this->db->exec($query)) {
             echo json_encode([
                 'status' => 500,
                 'message' => 'Gagal update config'
